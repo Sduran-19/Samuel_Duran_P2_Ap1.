@@ -1,0 +1,6 @@
+@Samuel_duran_P2_Ap1.Api_HostAddress = http://localhost:5021
+
+GET {{Samuel_duran_P2_Ap1.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

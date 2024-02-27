@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34622.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samuel_Duran_P2_Ap1.", "..\Samuel_Duran_P2_Ap1\Samuel_Duran_P2_Ap1\Samuel_Duran_P2_Ap1..csproj", "{D5DBDE2E-138C-4C50-AC52-33EBC2867B9C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samuel_duran_P2_Ap1.Api", "..\Samuel_Duran_P2_Ap1\Samuel_duran_P2_Ap1.Api\Samuel_duran_P2_Ap1.Api.csproj", "{DCF25A84-9E97-4D40-8BA4-34371B60DD0D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D5DBDE2E-138C-4C50-AC52-33EBC2867B9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5DBDE2E-138C-4C50-AC52-33EBC2867B9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5DBDE2E-138C-4C50-AC52-33EBC2867B9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5DBDE2E-138C-4C50-AC52-33EBC2867B9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCF25A84-9E97-4D40-8BA4-34371B60DD0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCF25A84-9E97-4D40-8BA4-34371B60DD0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCF25A84-9E97-4D40-8BA4-34371B60DD0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCF25A84-9E97-4D40-8BA4-34371B60DD0D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C603388E-4457-41E4-95CB-9DCDA8B0B76D}
+	EndGlobalSection
+EndGlobal
