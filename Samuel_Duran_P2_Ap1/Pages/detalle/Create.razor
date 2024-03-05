@@ -1,3 +1,189 @@
-﻿@page "/h1";
+﻿@page "/createvehiculo";
+@using Samuel_Duran_P2_Ap1.Models
 
 @inject HttpClient httpClient
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<EditForm Model="vehiculo" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="card-header">
+        <h3><strong> Registro de Vehículos</strong></h3>
+    </div>
+
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="fw-bold bi bi-calendar-date"> Fecha</label>
+                <InputDate @bind-Value="vehiculo.Fecha" class="form-control"></InputDate>
+                <ValidationMessage For="@(() => vehiculo.Fecha)" />
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="fw-bold bi bi-key"> Descripción:</label>
+                <InputText @bind-Value="vehiculo.Descripcion" class="form-control" placeholder="Ingrese la descripción" />
+                <ValidationMessage For="@(() => vehiculo.Descripcion)" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="fw-bold bi bi-key"> Monto:</label>
+                <InputNumber @bind-Value="vehiculo.Costos" class="form-control" placeholder="Ingrese el monto" />
+                <ValidationMessage For="@(() => vehiculo.Costos)" />
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="fw-bold bi bi-key"> Gastos:</label>
+                <InputNumber @bind-Value="vehiculo.Gastos" class="form-control" placeholder="Ingrese los gastos" />
+                <ValidationMessage For="@(() => vehiculo.Gastos)" />
+            </div>
+        </div>
+
+       
+        <div class="card-header">
+            <h3><strong> Detalle de Vehículos</strong></h3>
+        </div>
+
+        <div class="modal-body">
+            <div class="row">
+                <div class="col">
+                    <div>
+                        <label class="fw-bold">Accesorio:</label>
+                        <InputNumber class="form-control mb-2" @bind-Value="detalle.AccesorioId" placeholder="Ingrese el accesorio"></InputNumber>
+                    </div>
+                    <div class="text-end mb-2">
+                        <button type="button" class="btn btn-outline-success" @onclick="agregarDetalle"><i class="bi bi-floppy-fill"></i> Agregar</button>
+                    </div>
+                </div>
+
+                <div class="col-5">
+                    <div class="mb-4"></div>
+                    <table class="table table-bordered text-center">
+                        <thead class="bg-secondary text-white">
+                            <tr>
+                                <th class="col-3">Accesorio</th>
+                                <th class="col-1">Eliminar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ListaDetalles.Any())
+                            {
+                                @foreach (var item in ListaDetalles)
+                                {
+                                    <tr>
+                                        <td class="col-3">@item.AccesorioId</td>
+                                        <td class="col-1"><button type="button" class="btn btn-outline-danger" @onclick="(() => eliminarDetalle(item))"><i class="bi bi-trash3-fill" />Eliminar</button></td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr><td colspan="3">No hay detalles...</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+
+            </div>
+        </div>
+
+        <div class="card-footer bg-light d-flex justify-content-end">
+            <div class="btn-group">
+                <a type="button" href="/indexvehiculos/" class="btn btn-outline-danger"><span class="fas fa-arrow-left"></span> Volver </a>
+            </div>
+            <button type="submit" class="btn btn-outline-success">
+                <i class="bi bi-floppy-fill" /> Guardar
+            </button>
+        </div>
+    </div>
+
+    @mensajeTexto
+</EditForm>
+
+@code {
+
+    public Vehiculo vehiculo = new Vehiculo();
+    public VehiculoDetalle detalle = new VehiculoDetalle();
+
+    public List<Accesorios> ListaAccesorios = new List<Accesorios>();
+    public List<VehiculoDetalle> ListaDetalles = new List<VehiculoDetalle>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaAccesorios = await httpClient.GetFromJsonAsync<List<Accesorios>>("api/Accesorios");
+
+        vehiculo.Fecha = DateTime.Today;
+    }
+
+    public async Task Guardar()
+    {
+        var guardadoVehiculo = await httpClient.PostAsJsonAsync("api/Vehiculo", this.vehiculo);
+
+        if (guardadoVehiculo.IsSuccessStatusCode)
+        {
+            var vehiculoCreado = await guardadoVehiculo.Content.ReadFromJsonAsync<Vehiculo>();
+
+            foreach (var detalle in ListaDetalles)
+            {
+                VehiculoDetalle vehiculoDetalleNew = new VehiculoDetalle();
+                vehiculoDetalleNew.VehiculoId = vehiculoCreado.VehiculoId;
+                vehiculoDetalleNew.AccesorioId = detalle.AccesorioId;
+                await httpClient.PostAsJsonAsync("api/VehiculoDetalle", vehiculoDetalleNew);
+            }
+
+            await MostrarMensaje("Guardado Exitoso.", true);
+            NavigationManager.NavigateTo("/indexvehiculo");
+        }
+        else
+        {
+            await MostrarMensaje("Error, no se guardó", false);
+        }
+    }
+
+    public async Task agregarDetalle()
+    {
+        if (detalle.AccesorioId != 0)
+        {
+            ListaDetalles.Add(new VehiculoDetalle()
+                {
+                    AccesorioId = detalle.AccesorioId,
+                });
+            detalle.AccesorioId = 0; 
+        }
+        else
+        {
+            await MostrarMensaje("Seleccione un accesorio.", false);
+        }
+    }
+
+    public async Task eliminarDetalle(VehiculoDetalle detalle)
+    {
+        ListaDetalles.Remove(detalle);
+    }
+
+    string mensajeTexto = "";
+    bool ModalMensaje = false;
+
+    public async Task MostrarMensaje(string mensaje, bool exito)
+    {
+        mensajeTexto = mensaje;
+
+        if (exito)
+        {
+            mensajeTexto = "Guardado con éxito";
+        }
+        else
+        {
+            mensajeTexto = "Error al guardar";
+        }
+
+        ModalMensaje = true;
+        StateHasChanged();
+        await Task.Delay(3000);
+        ModalMensaje = false;
+        StateHasChanged();
+    }
+}

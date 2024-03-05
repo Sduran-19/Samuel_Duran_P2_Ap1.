@@ -1,3 +1,92 @@
-﻿@page "/h1";
+﻿@page "/detailsvehiculo/{VehiculoId:int}";
+@using Samuel_Duran_P2_Ap1.Models
 
 @inject HttpClient httpClient
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<div class="card shadow-lg">
+    @*Header*@
+    <div class="card-header">
+        <h3><strong>Detalle de Vehículo</strong></h3>
+    </div>
+    @*Body*@
+    <div class="card-body">
+        @*Datos*@
+        <div class="mb-1">
+            <p class="mb-0">VehiculoId: @vehiculo.VehiculoId</p>
+        </div>
+        <div class="mb-1">
+            <p class="mb-0">Fecha: @vehiculo.Fecha</p>
+        </div>
+        <div class="mb-1">
+            <p class="mb-0">Descripción: @vehiculo.Descripcion</p>
+        </div>
+        <div class="mb-1">
+            <p class="mb-0">Monto: @vehiculo.Costos</p>
+        </div>
+        <div class="mb-1">
+            <p class="mb-0">Gastos: @vehiculo.Gastos</p>
+        </div>
+    </div>
+
+    <div class="mb-4"></div>
+    <table class="table table-bordered text-center">
+        <thead class="bg-secondary text-white">
+            <tr>
+                <th class="col-3">Accesorio</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (ListaDetalles.Any())
+            {
+                @foreach (var detalle in ListaDetalles)
+                {
+                    <tr>
+                        <td class="col-3">@detalle.Id</td>
+                        <td class="col-3">@detalle.AccesorioId</td>
+                        <td class="col-3">@detalle.VehiculoId</td>
+                        <td class="col-3">@detalle.Valor</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr><td colspan="3">No hay detalles...</td></tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="card-footer bg-light d-flex justify-content-end">
+        <div class="btn-group">
+            <a type="button" href="/indexvehiculos/" class="btn btn-outline-danger"><span class="fas fa-arrow-left"></span> Volver </a>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    public Vehiculo vehiculo = new Vehiculo();
+    public List<VehiculoDetalle> ListaDetalles = new List<VehiculoDetalle>();
+
+    [Parameter]
+    public int VehiculoId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (VehiculoId > 0)
+        {
+            await Buscar();
+        }
+    }
+
+    public async Task Buscar()
+    {
+        var vehiculoEncontrado = await httpClient.GetFromJsonAsync<Vehiculo>("api/Vehiculos/" + VehiculoId);
+        if (vehiculoEncontrado != null)
+        {
+            this.vehiculo = vehiculoEncontrado;
+            ListaDetalles = (await httpClient.GetFromJsonAsync<List<VehiculoDetalle>>("api/VehiculoDetalle"))!.Where(d => d.VehiculoId == VehiculoId).ToList();
+        }
+    }
+}
