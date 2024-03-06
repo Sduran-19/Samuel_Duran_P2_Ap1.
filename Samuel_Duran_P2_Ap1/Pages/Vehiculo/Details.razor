@@ -17,13 +17,13 @@
             <p class="mb-0">VehiculoId: @vehiculo.VehiculoId</p>
         </div>
         <div class="mb-1">
-            <p class="mb-0">Fecha: @vehiculo.Fecha</p>
+            <p class="mb-0">Fecha: @vehiculo.Fecha.ToString("dd/MM/yyyy")</p>
         </div>
         <div class="mb-1">
             <p class="mb-0">Descripción: @vehiculo.Descripcion</p>
         </div>
         <div class="mb-1">
-            <p class="mb-0">Monto: @vehiculo.</p>
+            <p class="mb-0">Costos: @vehiculo.Costos</p>
         </div>
         <div class="mb-1">
             <p class="mb-0">Gastos: @vehiculo.Gastos</p>
@@ -34,7 +34,10 @@
     <table class="table table-bordered text-center">
         <thead class="bg-secondary text-white">
             <tr>
-                <th class="col-3">Accesorio</th>
+                <th class="col-3">Id</th>
+                <th class="col-3">AccesorioId</th>
+                <th class="col-3">VehiculoId</th>
+                <th class="col-3">Valor</th>
             </tr>
         </thead>
         <tbody>
@@ -59,19 +62,19 @@
 
     <div class="card-footer bg-light d-flex justify-content-end">
         <div class="btn-group">
-            <a type="button" href="/indexvehiculos/" class="btn btn-outline-danger"><span class="fas fa-arrow-left"></span> Volver </a>
+            <a type="button" href="/indexvehiculo/" class="btn btn-outline-danger"><span class="fas fa-arrow-left"></span> Volver </a>
         </div>
     </div>
 </div>
 
 @code {
 
-    public Vehiculo vehiculo = new Vehiculo();
-    public List<VehiculoDetalle> ListaDetalles = new List<VehiculoDetalle>();
+    
 
     [Parameter]
     public int VehiculoId { get; set; }
-
+    public Vehiculo vehiculo = new Vehiculo();
+    public List<VehiculoDetalle> ListaDetalles = new List<VehiculoDetalle>();
     protected override async Task OnInitializedAsync()
     {
         if (VehiculoId > 0)
@@ -82,11 +85,11 @@
 
     public async Task Buscar()
     {
-        var vehiculoEncontrado = await httpClient.GetFromJsonAsync<Vehiculo>("api/Vehiculos/" + VehiculoId);
+        var vehiculoEncontrado = await httpClient.GetFromJsonAsync<Vehiculo>("api/Vehiculoes/" + VehiculoId);
         if (vehiculoEncontrado != null)
         {
             this.vehiculo = vehiculoEncontrado;
-            ListaDetalles = (await httpClient.GetFromJsonAsync<List<VehiculoDetalle>>("api/VehiculoDetalle"))!.Where(d => d.VehiculoId == VehiculoId).ToList();
+            ListaDetalles = (await httpClient.GetFromJsonAsync<List<VehiculoDetalle>>("api/VehiculoDetalles"))!.Where(d => d.VehiculoId == VehiculoId).ToList();
         }
     }
 }

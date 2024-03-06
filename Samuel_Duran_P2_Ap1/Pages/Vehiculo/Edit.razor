@@ -1,0 +1,260 @@
+﻿@page "/editarvehiculos"
+@page "/editarvehiculos/{VehiculoID:int}"
+
+
+@inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
+
+<EditForm Model="vehiculo" OnValidSubmit="Guardar">
+	<DataAnnotationsValidator />
+
+	<div class="card-header">
+		<h3><strong> Editar Registro de Vehiculos</strong></h3>
+	</div>
+
+	<div class="card">
+		
+		<div class="card-body">
+			<div class="row">
+				<div class="col-6">
+					<label class="fw-bold">Descripci&oacute;n:</label>
+					<InputText class="form-control" @bind-Value="vehiculo.Descripcion"></InputText>
+					<ValidationMessage For="(() => vehiculo.Descripcion)" />
+				</div>
+				<div class="col-6">
+					<label class="fw-bold">Fecha:</label>
+					<InputDate class="form-control" @bind-Value="vehiculo.Fecha"></InputDate>
+					<ValidationMessage For="(() => vehiculo.Fecha)" />
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-6">
+					<label class="fw-bold">Costo:</label>
+					<InputNumber class="form-control" @bind-Value="vehiculo.Costos"></InputNumber>
+					<ValidationMessage For="(() => vehiculo.Costos)" />
+				</div>
+				<div class="col-6">
+					<label class="fw-bold">Gasto:</label>
+					<InputNumber class="form-control" @bind-Value="vehiculo.Gastos" disabled></InputNumber>
+				</div>
+			</div>
+		</div>
+
+		<div class="card-header">
+			<h3><strong> Editar Detalles de Vehiculos</strong></h3>
+		</div>
+
+		<div class="modal-body">
+			<div class="row">
+				<div class="row justify-content-end align-items-end">
+					<label class="fw-bold">Accesorio:</label>
+					<div class="col-4">
+						<InputText class="form-control" @bind-Value="accesorioSeleccionado"></InputText>
+					</div>
+					<div class="col-4">
+						<label class="fw-bold">Valor:</label>
+						<InputNumber class="form-control" @bind-Value="valorAcesorio"></InputNumber>
+					</div>
+					<div class="col-4">
+						<button type="button" class="btn btn-success" @onclick="agregarDetalle"><i class="fas fa-plus"></i> Agregar</button>
+					</div>
+				</div>
+
+				<div class="mb-4"></div>
+				<table class="table table-bordered text-center">
+
+					<thead class="bg-secondary text-white">
+						<tr>
+							<th class="col-3">Descripción</th>
+							<th class="col-7">Valor</th>
+							<th class="col-1">Eliminar</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						@if (ListaDetalles.Any())
+						{
+							@foreach (var item in ListaDetalles)
+							{
+								var itemAccesorio = (ListaAccesorios.FirstOrDefault(a => a.AccesoriosId == item.AccesorioId))!;
+								<tr>
+									<td class="col-3">@itemAccesorio.Descripcion</td>
+									<td>@item.Valor</td>
+									<td class="col-1"><button type="button" class="btn btn-outline-danger" @onclick="(() => eliminarDetalle(item))"><i class="bi bi-trash3-fill" />Eliminar</button></td>
+								</tr>
+							}
+						}
+						else
+						{
+							<tr><td colspan="3">No hay accesorios...</td></tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+
+		<div class="card-footer bg-light d-flex justify-content-end">
+			<div class="btn-group">
+				<a href="/indexvehiculo" class="btn btn-outline-danger"><span class="fas fa-arrow-left"></span> Volver </a>
+
+			</div>
+			<button type="submit" class="btn btn-outline-success">
+				<i class="bi bi-floppy-fill" /> Guardar
+			</button>
+		</div>
+	</div>
+	@mensajeTexto
+</EditForm>
+
+
+
+
+
+
+
+@code {
+
+	[Parameter]
+	public int VehiculoID { get; set; }
+
+	public string accesorioSeleccionado = "";
+	public float valorAcesorio = 0;
+
+	public Vehiculo vehiculo = new Vehiculo();
+	public VehiculoDetalle detalles = new VehiculoDetalle();
+	public List<Accesorios> ListaAccesorios = new List<Accesorios>();
+	public List<VehiculoDetalle> ListaDetalles = new List<VehiculoDetalle>();
+	public List<VehiculoDetalle> ListaDetallesEliminados = new List<VehiculoDetalle>();
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (VehiculoID != 0)
+		{
+			ListaAccesorios = await HttpClient.GetFromJsonAsync<List<Accesorios>>("api/Accesorios");
+			ListaDetalles = (await HttpClient.GetFromJsonAsync<List<VehiculoDetalle>>("api/VehiculoDetalles"))!.Where(d => d.VehiculoId == VehiculoID).ToList();
+
+			var buscado = await HttpClient.GetFromJsonAsync<Vehiculo>("api/Vehiculoes/" + VehiculoID);
+			if (buscado != null)
+			{
+				vehiculo = buscado;
+			}
+			else
+			{
+				await MostrarMensaje("Vehiculo no encontrado...", false);
+			}
+		}
+	}
+
+
+	public async Task Guardar()
+	{
+		var guardadoVehiculo = await HttpClient.PutAsJsonAsync("api/Vehiculoes/" + VehiculoID, this.vehiculo);
+
+		if (guardadoVehiculo.IsSuccessStatusCode)
+		{
+			if (ListaDetallesEliminados.Any())
+			{
+				foreach (var detalle in ListaDetallesEliminados)
+				{
+					await HttpClient.DeleteAsync("api/VehiculoDetalles/" + detalle.Id);
+				}
+			}
+
+			foreach (var detalle in ListaDetalles)
+			{
+				if (detalle.Id == 0)
+				{
+					VehiculoDetalle vehiculoDetalleNew = new VehiculoDetalle();
+					vehiculoDetalleNew.VehiculoId = VehiculoID;
+					vehiculoDetalleNew.AccesorioId = detalle.AccesorioId;
+					vehiculoDetalleNew.Valor = detalle.Valor;
+
+					await HttpClient.PostAsJsonAsync("api/VehiculoDetalles", vehiculoDetalleNew);
+				}
+			}
+
+			await MostrarMensaje("Guardado Existoso.", true);
+			NavigationManager.NavigateTo("/indexvehiculo");
+		}
+		else
+		{
+			await MostrarMensaje("No se puso contectar a la API!", false);
+		}
+	}
+
+
+	public async Task agregarDetalle()
+	{
+		bool existe = false;
+		var busqueda = await HttpClient.GetFromJsonAsync<List<Accesorios>>("api/Accesorios");
+		var resultado = busqueda.FirstOrDefault(a => a.Descripcion == accesorioSeleccionado);
+
+		if (resultado != null)
+		{
+			foreach (var item in ListaDetalles)
+			{
+
+				if (item.AccesorioId == resultado.AccesoriosId)
+				{
+					existe = true;
+				}
+			}
+			if (!existe)
+			{
+				vehiculo.Gastos += valorAcesorio;
+				ListaDetalles.Add(new VehiculoDetalle(0, resultado.AccesoriosId, valorAcesorio));
+				accesorioSeleccionado = "";
+				valorAcesorio = 0;
+
+			}
+			else
+			{
+				await MostrarMensaje("Accesorio ya esta agregado!", false);
+			}
+		}
+		else
+		{
+			await MostrarMensaje("Accesorio no encontrado!", false);
+		}
+	}
+
+
+
+	public async Task eliminarDetalle(VehiculoDetalle vehiculoDetalle)
+	{
+		vehiculo.Gastos -= vehiculoDetalle.Valor;
+		ListaDetallesEliminados.Add(new VehiculoDetalle(vehiculoDetalle.Id, vehiculoDetalle.VehiculoId, vehiculoDetalle.AccesorioId));
+		ListaDetalles.Remove(vehiculoDetalle);
+		ListaDetalles.Remove(vehiculoDetalle);
+		accesorioSeleccionado = "";
+		valorAcesorio = 0;
+	}
+
+
+
+	string mensajeTexto = "";
+	bool ModalMensaje = false;
+
+	public async Task MostrarMensaje(string mensaje, bool exito)
+	{
+		mensajeTexto = mensaje;
+
+		if (exito)
+		{
+			mensajeTexto = "Editado con éxito";
+		}
+		else
+		{
+			mensajeTexto = "Error al Editar";
+		}
+
+		ModalMensaje = true;
+		StateHasChanged();
+		await Task.Delay(3000);
+		ModalMensaje = false;
+		StateHasChanged();
+	}
+
+}

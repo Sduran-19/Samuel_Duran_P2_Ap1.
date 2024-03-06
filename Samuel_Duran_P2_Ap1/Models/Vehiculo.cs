@@ -8,7 +8,6 @@ namespace Samuel_Duran_P2_Ap1.Models
 		[Key]
 		public int VehiculoId { get; set; }
 
-        public int AccesoriosId { get; set; }
 
 
         [Required(ErrorMessage = "El campo fecha es obligatorio")]
@@ -21,6 +20,8 @@ namespace Samuel_Duran_P2_Ap1.Models
         public decimal Costos { get; set; }
 
         [Range(1, float.MaxValue, ErrorMessage = "El monto debe ser mayor a 0")]
-        public decimal Gastos { get; set; }
+        public float Gastos { get; set; }
+
+       
     }
 }

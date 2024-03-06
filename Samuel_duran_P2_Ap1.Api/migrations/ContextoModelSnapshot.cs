@@ -17,13 +17,25 @@ namespace Samuel_duran_P2_Ap1.Api.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.2");
 
+            modelBuilder.Entity("Samuel_Duran_P2_Ap1.Models.Accesorios", b =>
+                {
+                    b.Property<int>("AccesoriosId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("AccesoriosId");
+
+                    b.ToTable("Accesorios");
+                });
+
             modelBuilder.Entity("Samuel_Duran_P2_Ap1.Models.Vehiculo", b =>
                 {
                     b.Property<int>("VehiculoId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("AccesoriosId")
                         .HasColumnType("INTEGER");
 
                     b.Property<decimal>("Costos")
@@ -36,8 +48,8 @@ namespace Samuel_duran_P2_Ap1.Api.Migrations
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("Gastos")
-                        .HasColumnType("TEXT");
+                    b.Property<float>("Gastos")
+                        .HasColumnType("REAL");
 
                     b.HasKey("VehiculoId");
 
@@ -53,9 +65,8 @@ namespace Samuel_duran_P2_Ap1.Api.Migrations
                     b.Property<int>("AccesorioId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("Valor")
-                        .IsRequired()
-                        .HasColumnType("INTEGER");
+                    b.Property<float>("Valor")
+                        .HasColumnType("REAL");
 
                     b.Property<int>("VehiculoId")
                         .HasColumnType("INTEGER");

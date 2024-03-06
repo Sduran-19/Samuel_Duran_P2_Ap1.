@@ -1,0 +1,82 @@
+﻿@page "/createAccesorio"
+
+@inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
+
+<EditForm Model="accesorio" OnValidSubmit="Guardar">
+	<DataAnnotationsValidator />
+
+	<div class="card-header">
+		<h3><strong> Registro Accesorios</strong></h3>
+	</div>
+	<div class="card">
+		</div>
+		<div class="card-body">
+			<div class="row">
+				<div class="col">
+					<label class="fw-bold">Descripci&oacute;n:</label>
+					<InputText class="form-control" @bind-Value="accesorio.Descripcion"></InputText>
+					<ValidationMessage For="(() => accesorio.Descripcion)" />
+				</div>
+			</div>
+		</div>
+	<div class="card-footer bg-light d-flex justify-content-end">
+		<div class="btn-group">
+			<a href="/indexAccesorios" class="btn btn-outline-danger"><span class="fas fa-arrow-left"></span> Volver </a>
+			
+		</div>
+		<button type="submit" class="btn btn-outline-success">
+			<i class="bi bi-floppy-fill" /> Guardar
+		</button>
+	</div>
+	
+		@mensajeTexto
+</EditForm>
+
+
+
+
+
+@code {
+
+	public Accesorios accesorio = new Accesorios();
+
+	public async Task Guardar()
+	{
+		var guardado = await HttpClient.PostAsJsonAsync("api/Accesorios", this.accesorio);
+		if (guardado.IsSuccessStatusCode)
+		{
+			await MostrarMensaje("Guardado exitoso!", true);
+			NavigationManager.NavigateTo("indexAccesorios");
+		}
+		else
+		{
+			await MostrarMensaje("Error al registrar...", false);
+		}
+	}
+
+
+	string mensajeTexto = "";
+	bool ModalMensaje = false;
+
+	public async Task MostrarMensaje(string mensaje, bool exito)
+	{
+		mensajeTexto = mensaje;
+
+		if (exito)
+		{
+			mensajeTexto = "Guardado con éxito";
+		}
+		else
+		{
+			mensajeTexto = "Error al guardar";
+		}
+
+		ModalMensaje = true;
+		StateHasChanged();
+		await Task.Delay(3000);
+		ModalMensaje = false;
+		StateHasChanged();
+	}
+
+}
