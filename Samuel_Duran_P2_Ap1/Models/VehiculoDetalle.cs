@@ -17,16 +17,22 @@ namespace Samuel_Duran_P2_Ap1.Models
         public int AccesorioId { get; set; }
 
         [Required(ErrorMessage = "Este campo es requerido")]
-        public int? Valor {  get; set; }
+        public float Valor {  get; set; }
 
 
         public VehiculoDetalle() { }
 
-        public VehiculoDetalle(int Id, int AccesorrioId, string Descripcion)
+        public VehiculoDetalle(int accesorioid, float valor)
         {
-            Id = Id;
-            AccesorrioId = AccesorrioId;
-            Descripcion = Descripcion;
+            AccesorioId = accesorioid;
+            Valor = valor;
+        }
+
+        public VehiculoDetalle(int id, int accesorioid, float valor)
+        {
+            Id = id;
+            AccesorioId = accesorioid;
+            Valor = valor;
         }
 
     }
