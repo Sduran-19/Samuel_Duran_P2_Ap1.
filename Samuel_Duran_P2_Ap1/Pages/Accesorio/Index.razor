@@ -1,0 +1,123 @@
+﻿@page "/indexAccesorios"
+
+@inject HttpClient HttpClient
+
+<div class="card">
+
+	<div class="card-header">
+		<h3><strong> Accesorios</strong></h3>
+	</div>
+
+	<div class="card-body">
+		<div class="row align-items-end justify-content-end mb-4">
+			<div class="col-3">
+				<label class="fw-bold">Filtrar:</label>
+				<select class="form-select" @bind="filtrar">
+					<option value="1">Accesorio Id</option>
+					<option value="2">Descripcion</option>
+				</select>
+			</div>
+
+			<div class="col-8">
+				<label class="fw-bold">Busqueda:</label>
+				<div class="input-group">
+					<InputText class="form-control" @bind-Value="busqueda"></InputText>
+					<button class="btn btn-outline-primary" @onclick="Buscar"><i class="fas fa-search"></i> Buscar</button>
+				</div>
+			</div>
+
+			<div class="col">
+				<a href="/createAccesorio" class="btn btn-success"><i class="fas fa-plus"></i> Crear</a>
+			</div>
+		</div>
+
+		<div>
+			<table class="table table-bordered text-center">
+
+				<thead>
+					<tr>
+						<th>AccesorioId</th>
+						<th>Descripci&oacute;n</th>
+						<th>Editar</th>
+						<th>Detalle</th>
+						<th>Eliminar</th>
+					</tr>
+				</thead>
+
+				<tbody>
+					@if (ListaAccesorios.Any())
+					{
+						@foreach (var item in ListaAccesorios)
+						{
+							<tr>
+								<td>@item.AccesoriosId</td>
+								<td>@item.Descripcion</td>
+								<td>
+									<a href="/editAccesorio/@item.AccesoriosId" class="bi bi-pencil-square">
+									
+									</a>
+
+								</td>
+								<td>
+									<a href="/detailsAccesorio/@item.AccesoriosId" class="bi bi-eye-fill">
+									
+									</a>
+								</td>
+								<td>
+									<a href="/deleteAccesorio/@item.AccesoriosId" class="bi bi-trash3-fill">
+										
+									</a>
+								</td>
+							</tr>
+						}
+					}
+					else
+					{
+						<tr>
+							<td colspan="9" class="text-center"> <label>No se ha encontrado nada</label> </td>
+						</tr>
+					}
+				</tbody>
+
+			</table>
+
+		</div>
+
+
+	</div>
+
+
+</div>
+
+
+
+
+@code {
+
+	public string filtrar = "1", busqueda = "";
+
+	private List<Accesorios> ListaAccesorios = new List<Accesorios>();
+
+	protected override async Task OnInitializedAsync()
+	{
+		ListaAccesorios = await HttpClient.GetFromJsonAsync<List<Accesorios>>("api/Accesorios");
+	}
+
+	public async Task Buscar()
+	{
+		if (filtrar == "1" && int.TryParse(busqueda, out int resul))
+		{
+			ListaAccesorios = (await HttpClient.GetFromJsonAsync<List<Accesorios>>("api/Accesorios")).Where(a => a.AccesoriosId == resul).ToList();
+		}
+		else if (filtrar == "2")
+		{
+			ListaAccesorios = (await HttpClient.GetFromJsonAsync<List<Accesorios>>("api/Accesorios")).Where(a => a.Descripcion == busqueda).ToList();
+		}
+		if (string.IsNullOrEmpty(busqueda))
+		{
+			ListaAccesorios = await HttpClient.GetFromJsonAsync<List<Accesorios>>("api/Accesorios");
+		}
+	}
+
+
+}
