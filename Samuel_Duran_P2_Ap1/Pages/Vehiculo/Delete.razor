@@ -1,0 +1,118 @@
+﻿@page "/deleteVehiculo/{VehiculoID:int}"
+
+
+@inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
+
+<EditForm Model="vehiculo" OnValidSubmit="Eliminar">
+	<DataAnnotationsValidator />
+	<div class="card-header">
+		<h3><strong>Eliminar Registro de Vehículo</strong></h3>
+	</div>
+
+	<div class="card">
+	
+		<div class="card-body">
+			<div class="row">
+				<div class="col-6">
+					<label class="fw-bold">Descripci&oacute;n:</label>
+					<span>@vehiculo.Descripcion</span>
+				</div>
+				<div class="col-6">
+					<label class="fw-bold">Fecha:</label>
+					<span>@vehiculo.Fecha.ToString("dd/MM/yyyy")</span>
+				</div>
+			</div>
+
+			<div class="row mb-4">
+				<div class="col-6">
+					<label class="fw-bold">Costo:</label>
+					<span>@vehiculo.Costos</span>
+				</div>
+				<div class="col-6">
+					<label class="fw-bold">Gasto:</label>
+					<span>@vehiculo.Gastos</span>
+				</div>
+			</div>
+
+			<div class="row text-center">
+				<label class="fw-bold">¿Seguro que quieres eliminar?</label>
+			</div>
+		</div>
+		<div class="card-footer">
+			<div class="text-center">
+				<button type="button" class="btn btn-success" @onclick="Eliminar"><i class="fas fa-check"></i> Si</button>
+				<a href="/indexvehiculo" class="btn btn-danger"><i class="fas fa-times"></i> No</a>
+			</div>
+		</div>
+	</div>
+
+	@mensajeTexto
+</EditForm>
+
+
+
+
+
+
+
+@code {
+
+	[Parameter]
+	public int VehiculoID { get; set; }
+
+	public Vehiculo vehiculo = new Vehiculo();
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (VehiculoID != 0)
+		{
+			var buscado = await HttpClient.GetFromJsonAsync<Vehiculo>("api/Vehiculoes/" + VehiculoID);
+			if (buscado != null)
+			{
+				vehiculo = buscado;
+			}
+			else
+			{
+				await MostrarMensaje("Vehiculo no encontrado...", false);
+			}
+		}
+	}
+
+	public async Task Eliminar()
+	{
+		var guardado = await HttpClient.DeleteAsync("api/Vehiculoes/" + VehiculoID);
+		if (guardado.IsSuccessStatusCode)
+		{
+			await MostrarMensaje("Eliminado exitoso!", true);
+			NavigationManager.NavigateTo("indexvehiculo");
+		}
+		else
+		{
+			await MostrarMensaje("Error al eliminar...", false);
+		}
+	}
+
+	string mensajeTexto = "";
+	bool ModalMensaje = false;
+
+	public async Task MostrarMensaje(string mensaje, bool exito)
+	{
+		mensajeTexto = mensaje;
+
+		if (exito)
+		{
+			mensajeTexto = "Se elimino correctamente";
+		}
+		else
+		{
+			mensajeTexto = "Error";
+		}
+		ModalMensaje = true;
+		StateHasChanged();
+		await Task.Delay(3000);
+		ModalMensaje = false;
+		StateHasChanged();
+	}
+
+}

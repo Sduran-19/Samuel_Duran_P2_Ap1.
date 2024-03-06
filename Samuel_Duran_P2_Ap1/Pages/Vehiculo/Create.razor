@@ -29,16 +29,15 @@
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label class="fw-bold bi bi-key"> Monto:</label>
+                <label class="fw-bold bi bi-key"> Costos:</label>
                 <InputNumber @bind-Value="vehiculo.Costos" class="form-control" placeholder="Ingrese el monto" />
                 <ValidationMessage For="@(() => vehiculo.Costos)" />
             </div>
 
-            <div class="col-md-6 mb-3">
-                <label class="fw-bold bi bi-key"> Gastos:</label>
-                <InputNumber @bind-Value="vehiculo.Gastos" class="form-control" placeholder="Ingrese los gastos" />
-                <ValidationMessage For="@(() => vehiculo.Gastos)" />
-            </div>
+          <div class="col-6">
+					<label class="fw-bold">Gasto:</label>
+					<InputNumber class="form-control" @bind-Value="vehiculo.Gastos" disabled></InputNumber>
+				</div>
         </div>
 
        
@@ -48,13 +47,17 @@
 
         <div class="modal-body">
             <div class="row">
-                <div class="col">
-                    <div>
-                        <label class="fw-bold">Accesorio:</label>
-                        <InputNumber class="form-control mb-2" @bind-Value="detalle.AccesorioId" placeholder="Ingrese el accesorio"></InputNumber>
+                <div class="row justify-content-end align-items-end">
+                    <label class="fw-bold">Accesorio:</label>
+                    <div class="col-4">
+                        <InputText class="form-control" @bind-Value="accesorioSeleccionado"></InputText>
                     </div>
-                    <div class="text-end mb-2">
-                        <button type="button" class="btn btn-outline-success" @onclick="agregarDetalle"><i class="bi bi-floppy-fill"></i> Agregar</button>
+                    <div class="col-4">
+                        <label class="fw-bold">Valor:</label>
+                        <InputNumber class="form-control" @bind-Value="valorAcesorio"></InputNumber>
+                    </div>
+                    <div class="col-4">
+                        <button type="button" class="btn btn-success" @onclick="agregarDetalle"><i class="fas fa-plus"></i> Agregar</button>
                     </div>
                 </div>
 
@@ -63,7 +66,8 @@
                     <table class="table table-bordered text-center">
                         <thead class="bg-secondary text-white">
                             <tr>
-                                <th class="col-3">Accesorio</th>
+                                <th class="col-3">Descripción</th>
+                                <th class="col-7">Valor</th>
                                 <th class="col-1">Eliminar</th>
                             </tr>
                         </thead>
@@ -72,8 +76,10 @@
                             {
                                 @foreach (var item in ListaDetalles)
                                 {
+                                    var itemAccesorio = (ListaAccesorios.FirstOrDefault(a => a.AccesoriosId == item.AccesorioId))!;
                                     <tr>
-                                        <td class="col-3">@item.AccesorioId</td>
+                                        <td class="col-3">@itemAccesorio.Descripcion</td>
+                                        <td class="col-3">@item.Valor</td>
                                         <td class="col-1"><button type="button" class="btn btn-outline-danger" @onclick="(() => eliminarDetalle(item))"><i class="bi bi-trash3-fill" />Eliminar</button></td>
                                     </tr>
                                 }
@@ -92,7 +98,7 @@
 
         <div class="card-footer bg-light d-flex justify-content-end">
             <div class="btn-group">
-                <a type="button" href="/indexvehiculos/" class="btn btn-outline-danger"><span class="fas fa-arrow-left"></span> Volver </a>
+                <a type="button" href="/indexvehiculo/" class="btn btn-outline-danger"><span class="fas fa-arrow-left"></span> Volver </a>
             </div>
             <button type="submit" class="btn btn-outline-success">
                 <i class="bi bi-floppy-fill" /> Guardar
@@ -104,6 +110,8 @@
 </EditForm>
 
 @code {
+    public float valorAcesorio = 0;
+    public string accesorioSeleccionado = "";
 
     public Vehiculo vehiculo = new Vehiculo();
     public VehiculoDetalle detalle = new VehiculoDetalle();
@@ -120,7 +128,7 @@
 
     public async Task Guardar()
     {
-        var guardadoVehiculo = await httpClient.PostAsJsonAsync("api/Vehiculo", this.vehiculo);
+        var guardadoVehiculo = await httpClient.PostAsJsonAsync("api/Vehiculoes", this.vehiculo);
 
         if (guardadoVehiculo.IsSuccessStatusCode)
         {
@@ -131,7 +139,8 @@
                 VehiculoDetalle vehiculoDetalleNew = new VehiculoDetalle();
                 vehiculoDetalleNew.VehiculoId = vehiculoCreado.VehiculoId;
                 vehiculoDetalleNew.AccesorioId = detalle.AccesorioId;
-                await httpClient.PostAsJsonAsync("api/VehiculoDetalle", vehiculoDetalleNew);
+                vehiculoDetalleNew.Valor = detalle.Valor;
+                await httpClient.PostAsJsonAsync("api/VehiculoDetalles", vehiculoDetalleNew);
             }
 
             await MostrarMensaje("Guardado Exitoso.", true);
@@ -145,19 +154,42 @@
 
     public async Task agregarDetalle()
     {
-        if (detalle.AccesorioId != 0)
+        bool existe = false;
+        var busqueda = await httpClient.GetFromJsonAsync<List<Accesorios>>("api/Accesorios");
+        var resultado = busqueda.FirstOrDefault(a => a.Descripcion == accesorioSeleccionado);
+
+        if (resultado != null)
         {
-            ListaDetalles.Add(new VehiculoDetalle()
+            foreach (var item in ListaDetalles)
+            {
+
+                if (item.AccesorioId == resultado.AccesoriosId)
                 {
-                    AccesorioId = detalle.AccesorioId,
-                });
-            detalle.AccesorioId = 0; 
+                    existe = true;
+                }
+            }
+            if (!existe)
+            {
+                vehiculo.Gastos += valorAcesorio;
+                ListaDetalles.Add(new VehiculoDetalle(resultado.AccesoriosId, valorAcesorio));
+                accesorioSeleccionado = "";
+                valorAcesorio = 0;
+
+            }
+            else
+            {
+                await MostrarMensaje("El accesorio ya está agregado!", false);
+            }
         }
         else
         {
-            await MostrarMensaje("Seleccione un accesorio.", false);
+            await MostrarMensaje("Accesorio no encontrado!", false);
         }
     }
+
+
+
+
 
     public async Task eliminarDetalle(VehiculoDetalle detalle)
     {
@@ -177,7 +209,7 @@
         }
         else
         {
-            mensajeTexto = "Error al guardar";
+            mensajeTexto = "Error al guardar, El accesorio no existe";
         }
 
         ModalMensaje = true;
