@@ -7,6 +7,7 @@ namespace Samuel_duran_P2_Ap1.DAL
     {
         public DbSet<Vehiculo>? Vehiculo { get; set; }
 
+        public DbSet<Accesorios>? Accesorios { get; set; }
         public DbSet<VehiculoDetalle>? VehiculoDetalle { get; set; }
 
 
